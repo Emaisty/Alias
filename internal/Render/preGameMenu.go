@@ -1,13 +1,14 @@
 package Render
 
 import (
+	"Alias/internal/glob"
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/widgets"
 )
 
 func changePushButtonToField(table *widgets.QTableWidget, row int, column int) {
-	var widget = widgets.NewQTableWidgetItem(1)
+	widget := widgets.NewQTableWidgetItem(1)
 	table.RemoveCellWidget(row, column)
 	table.SetItem(row, column, widget)
 }
@@ -18,8 +19,8 @@ func insertRow(table *widgets.QTableWidget, row int) {
 		table.SetItem(row, i, widgets.NewQTableWidgetItem(1))
 	}
 	if table.ColumnCount() == 4 {
-		var addThirdPlayer = widgets.NewQPushButton(nil)
-		addThirdPlayer.SetText("add 3 player")
+		addThirdPlayer := widgets.NewQPushButton(nil)
+		addThirdPlayer.SetText(glob.Text.AddThirdPlayer)
 		addThirdPlayer.ConnectPressed(func() {
 			changePushButtonToField(table, row, 3)
 		})
@@ -75,13 +76,14 @@ func spinBoxValueChanged(val int, teamTable *widgets.QTableWidget) {
 }
 
 func createTable() *widgets.QTableWidget {
-	var teamTable = widgets.NewQTableWidget2(0, 4, nil)
-	teamTable.SetMaximumWidth(1000)
+	teamTable := widgets.NewQTableWidget2(0, 4, nil)
+	teamTable.SetMinimumHeight(1000)
 	teamTable.SetMinimumWidth(830)
 	teamTable.ConnectCellPressed(func(row int, column int) {
 		teamTable.Item(row, column).SetBackground(gui.NewQBrush4(core.Qt__red, core.Qt__NoBrush))
 	})
-	namesForColumns := [4]string{"Team name", "1 player", "2 player", "3 player (optional)"}
+	namesForColumns := [4]string{glob.Text.TeamName, glob.Text.FirstPlayer, glob.Text.SecondPlayer,
+		glob.Text.ThirdPlayer}
 	for i := 0; i < 4; i++ {
 		teamTable.SetHorizontalHeaderItem(i, widgets.NewQTableWidgetItem2(namesForColumns[i], 1))
 		teamTable.SetColumnWidth(i, 200)
@@ -93,7 +95,7 @@ func createTable() *widgets.QTableWidget {
 }
 
 func createSpinBox(table *widgets.QTableWidget) *widgets.QSpinBox {
-	var teamsSpinBox = widgets.NewQSpinBox(nil)
+	teamsSpinBox := widgets.NewQSpinBox(nil)
 	teamsSpinBox.SetMaximumWidth(50)
 	teamsSpinBox.SetValueDefault(1)
 	teamsSpinBox.SetMinimum(2)
@@ -112,7 +114,8 @@ func prepareTableForTeamMode(table *widgets.QTableWidget) {
 		table.RemoveRow(i)
 		insertRow(table, i)
 	}
-	namesForColumns := [4]string{"Team name", "1 player", "2 player", "3 player (optional)"}
+	namesForColumns := [4]string{glob.Text.TeamName, glob.Text.FirstPlayer, glob.Text.SecondPlayer,
+		glob.Text.ThirdPlayer}
 	for i := 0; i < 4; i++ {
 		table.SetHorizontalHeaderItem(i, widgets.NewQTableWidgetItem2(namesForColumns[i], 1))
 		table.SetColumnWidth(i, 200)
@@ -127,7 +130,7 @@ func prepareTableForSoloMode(table *widgets.QTableWidget) {
 		table.RemoveRow(i)
 		insertRow(table, i)
 	}
-	table.SetHorizontalHeaderItem(0, widgets.NewQTableWidgetItem2("Player name", 1))
+	table.SetHorizontalHeaderItem(0, widgets.NewQTableWidgetItem2(glob.Text.PlayerName, 1))
 	table.SetColumnWidth(0, 200)
 }
 
@@ -137,19 +140,39 @@ func contentOfPreGameMenu(parent *widgets.QMainWindow) *widgets.QGridLayout {
 	backButton := widgets.NewQPushButton(nil)
 	backButton.SetText("<")
 	backButton.ConnectPressed(func() {
-		RenderMainMenu(parent)
+		DisplayMainMenu(parent)
 	})
 
-	title := widgets.NewQLabel2("Pre Game", nil, 0)
+	title := widgets.NewQLabel2(glob.Text.PreGame, nil, 0)
 
-	labelHowManyTeams := widgets.NewQLabel2("How many teams", nil, 0)
+	labelHowManyTeams := widgets.NewQLabel2(glob.Text.HowManyTeams, nil, 0)
 
 	teamTable := createTable()
 
 	teamsSpinBox := createSpinBox(teamTable)
 
+	modeComboBox := widgets.NewQComboBox(nil)
+	modeComboBox.AddItems([]string{glob.Text.TeamMode, glob.Text.SoloMode})
+	modeComboBox.ConnectCurrentIndexChanged(func(index int) {
+		if index == 0 {
+			labelHowManyTeams.SetText(glob.Text.HowManyTeams)
+			prepareTableForTeamMode(teamTable)
+		} else {
+			labelHowManyTeams.SetText(glob.Text.HowManyPlayers)
+			prepareTableForSoloMode(teamTable)
+		}
+	})
+
+	languageComboBox := widgets.NewQComboBox(nil)
+	languageComboBox.AddItems([]string{glob.Text.Russian, glob.Text.English})
+
+	difficultyLabel := widgets.NewQLabel2(glob.Text.Difficulty, nil, 0)
+
+	difficultyComboBox := widgets.NewQComboBox(nil)
+	difficultyComboBox.AddItems([]string{"1", "2", "3"})
+
 	startGame := widgets.NewQPushButton(nil)
-	startGame.SetText("Start Game")
+	startGame.SetText(glob.Text.StartGame)
 	startGame.ConnectPressed(func() {
 		teams, flag := getTeamFromTable(teamTable)
 		if !flag {
@@ -159,54 +182,24 @@ func contentOfPreGameMenu(parent *widgets.QMainWindow) *widgets.QGridLayout {
 		//TODO next
 	})
 
-	modeComboBox := widgets.NewQComboBox(nil)
-	modeComboBox.AddItems([]string{"team mode", "solo mode"})
-	modeComboBox.ConnectCurrentIndexChanged(func(index int) {
-		if index == 0 {
-			labelHowManyTeams.SetText("How many teams")
-			prepareTableForTeamMode(teamTable)
-		} else {
-			labelHowManyTeams.SetText("How many players")
-			prepareTableForSoloMode(teamTable)
-		}
-	})
-
 	layout.AddWidget(backButton)
 	layout.AddWidget(title)
 	layout.AddWidget(modeComboBox)
 	layout.AddWidget(labelHowManyTeams)
 	layout.AddWidget(teamsSpinBox)
+	layout.AddWidget(languageComboBox)
+	layout.AddWidget(difficultyLabel)
+	layout.AddWidget(difficultyComboBox)
 	layout.AddWidget(teamTable)
 	layout.AddWidget(startGame)
 
 	return layout
 }
 
-func RenderPreGameMenu(parent *widgets.QMainWindow) {
-	var centralWidget = widgets.NewQWidget(nil, 0)
+func displayPreGameMenu(parent *widgets.QMainWindow) {
+	centralWidget := widgets.NewQWidget(nil, 0)
 
 	centralWidget.SetLayout(contentOfPreGameMenu(parent))
-	parent.SetCentralWidget(centralWidget)
-	parent.Show()
-}
-
-func RenderMainMenu(parent *widgets.QMainWindow) {
-	var centralWidget = widgets.NewQWidget(nil, 0)
-
-	var title = widgets.NewQLabel(nil, 0)
-	title.SetText("Alias")
-
-	var startGameButton = widgets.NewQPushButton(nil)
-	startGameButton.SetText("Start Game")
-	startGameButton.ConnectPressed(func() {
-		RenderPreGameMenu(parent)
-	})
-
-	var layout = widgets.NewQGridLayout2()
-	layout.AddWidget(title)
-	layout.AddWidget(startGameButton)
-
-	centralWidget.SetLayout(layout)
 	parent.SetCentralWidget(centralWidget)
 	parent.Show()
 }
