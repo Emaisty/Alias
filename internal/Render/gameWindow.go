@@ -1,5 +1,0 @@
-package Render
-
-func displayGameWindow() {
-
-}

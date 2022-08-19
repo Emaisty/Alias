@@ -1,0 +1,40 @@
+{
+  "Ru": {
+    "StartGame": "Начать игру",
+    "Settings": "Настройки",
+    "PreGame": "Подготовка к игре",
+    "HowManyPlayers": "Кол-во игроков",
+    "HowManyTeams": "Кол-во команд",
+    "SoloMode" : "Одиночный режим",
+    "TeamMode" : "Командный режим",
+    "TeamName": "Название команды",
+    "PlayerName" : "Имя игрока",
+    "FirstPlayer": "Первый игрок",
+    "SecondPlayer": "Второй игрок",
+    "ThirdPlayer": "Третий игрок(опционально)",
+    "AddThirdPlayer": "Добавить 3-го игрока",
+    "Language" : "Язык",
+    "Russian" : "Русский",
+    "English" : "Англиский",
+    "Difficulty" : "Уровень сложности"
+  },
+  "En": {
+    "StartGame": "Start game",
+    "Settings": "Settings",
+    "PreGame": "Pre Game",
+    "HowManyPlayers": "How many players",
+    "HowManyTeams": "How many teams",
+    "SoloMode" : "Solo mode",
+    "TeamMode" : "Team mode",
+    "TeamName": "Team name",
+    "PlayerName" : "Player name",
+    "FirstPlayer": "First player",
+    "SecondPlayer": "Second player",
+    "ThirdPlayer": "Third player (optional)",
+    "AddThirdPlayer": "Add 3rd player",
+    "Language" : "Language",
+    "Russian" : "Russian",
+    "English" : "English",
+    "Difficulty" : "Difficulty"
+  }
+}
