@@ -11,33 +11,29 @@ type mainMenuObjects struct {
 	startGameButton *widgets.QPushButton
 }
 
-func NewMainMenuObjects(app application) *mainMenuObjects {
+func newMainMenuObjects(app application) *mainMenuObjects {
 	var mainMenu mainMenuObjects
 	mainMenu.application = app
 	return &mainMenu
 }
 
-func (page *mainMenuObjects) createTitle() {
-	page.title = widgets.NewQLabel(nil, 0)
-	page.title.SetText("Alias")
-}
-
 func (page *mainMenuObjects) createStartGameButton() {
-	page.startGameButton = widgets.NewQPushButton(nil)
-	page.startGameButton.SetText(glob.Text.StartGame)
+	page.startGameButton = widgets.NewQPushButton2(glob.Text.StartGame, nil)
 
 	//call pre game page, when button pressed
 	page.startGameButton.ConnectPressed(page.application.displayPreGameMenu)
 }
 
 func (page *mainMenuObjects) createObjects() {
-	page.createTitle()
+	page.title = widgets.NewQLabel2("Alias", nil, 0)
+
 	page.createStartGameButton()
 }
 
 // Construct layout from elements and render it on main window
 func (page *mainMenuObjects) render() {
 	layout := widgets.NewQGridLayout2()
+
 	layout.AddWidget(page.title)
 	layout.AddWidget(page.startGameButton)
 
@@ -46,7 +42,7 @@ func (page *mainMenuObjects) render() {
 
 func (app application) displayMainMenu() {
 	//create main menu objects
-	mainMenu := NewMainMenuObjects(app)
+	mainMenu := newMainMenuObjects(app)
 
 	//create widgets
 	mainMenu.createObjects()

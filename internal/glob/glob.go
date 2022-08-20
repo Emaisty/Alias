@@ -18,6 +18,18 @@ type text struct {
 	Russian        string
 	English        string
 	Difficulty     string
+	Quit           string
+	AUSureExit     string
+	AUSureQuit     string
+	Skip           string
+	Guessed        string
+	Start          string
+	NextRound      string
+}
+
+type settings struct {
+	CostOfSkip  int
+	TimeOfRound int
 }
 
 type AllText struct {
@@ -26,3 +38,5 @@ type AllText struct {
 }
 
 var Text text
+
+var Config settings

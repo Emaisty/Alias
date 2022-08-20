@@ -21,7 +21,7 @@ type preGameMenuObjects struct {
 	startGameButton    *widgets.QPushButton
 }
 
-func NewPreGameMenuObjects(app application) *preGameMenuObjects {
+func newPreGameMenuObjects(app application) *preGameMenuObjects {
 	var menu preGameMenuObjects
 	menu.application = app
 	return &menu
@@ -263,7 +263,7 @@ func getTeamFromTable(table *widgets.QTableWidget) ([][]string, bool) {
 }
 
 func (app application) displayPreGameMenu() {
-	preGameMenu := NewPreGameMenuObjects(app)
+	preGameMenu := newPreGameMenuObjects(app)
 
 	// Create widgets for pre game page
 	preGameMenu.createObjects()
