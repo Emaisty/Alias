@@ -57,6 +57,11 @@ func initConfigs() {
 
 }
 
+type page interface {
+	createObjects()
+	render()
+}
+
 type application struct {
 	window *widgets.QMainWindow
 }

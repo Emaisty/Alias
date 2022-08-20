@@ -17,37 +17,39 @@ func NewMainMenuObjects(app application) *mainMenuObjects {
 	return &mainMenu
 }
 
-func (menu *mainMenuObjects) createTitle() {
-	menu.title = widgets.NewQLabel(nil, 0)
-	menu.title.SetText("Alias")
+func (page *mainMenuObjects) createTitle() {
+	page.title = widgets.NewQLabel(nil, 0)
+	page.title.SetText("Alias")
 }
 
-func (menu *mainMenuObjects) createStartGameButton() {
-	menu.startGameButton = widgets.NewQPushButton(nil)
-	menu.startGameButton.SetText(glob.Text.StartGame)
+func (page *mainMenuObjects) createStartGameButton() {
+	page.startGameButton = widgets.NewQPushButton(nil)
+	page.startGameButton.SetText(glob.Text.StartGame)
 
-	//call pre game menu, when button pressed
-	menu.startGameButton.ConnectPressed(menu.application.displayPreGameMenu)
+	//call pre game page, when button pressed
+	page.startGameButton.ConnectPressed(page.application.displayPreGameMenu)
+}
+
+func (page *mainMenuObjects) createObjects() {
+	page.createTitle()
+	page.createStartGameButton()
 }
 
 // Construct layout from elements and render it on main window
-func (menu *mainMenuObjects) render() {
+func (page *mainMenuObjects) render() {
 	layout := widgets.NewQGridLayout2()
-	layout.AddWidget(menu.title)
-	layout.AddWidget(menu.startGameButton)
+	layout.AddWidget(page.title)
+	layout.AddWidget(page.startGameButton)
 
-	menu.application.show(layout)
+	page.application.show(layout)
 }
 
 func (app application) displayMainMenu() {
 	//create main menu objects
 	mainMenu := NewMainMenuObjects(app)
 
-	//set title
-	mainMenu.createTitle()
-
-	//button to run a game
-	mainMenu.createStartGameButton()
+	//create widgets
+	mainMenu.createObjects()
 
 	// Construct layout and render it on main window
 	mainMenu.render()
