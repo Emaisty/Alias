@@ -1,6 +1,8 @@
 package game
 
-import "Alias/pkg/team"
+import (
+	"Alias/pkg/team"
+)
 
 type Game struct {
 	Teams           []team.Team
@@ -35,4 +37,18 @@ func (game *Game) GetCurrentPlayersName() (string, string, string) {
 	return currentTeam.Name,
 		currentTeam.Players[game.WhichTurnInTeam[game.WhichTeamTurn]],
 		currentTeam.Players[(game.WhichTurnInTeam[game.WhichTeamTurn]+1)%len(currentTeam.Players)]
+}
+
+func (game *Game) SaveResultAndGoNext(res int) {
+	game.Teams[game.WhichTeamTurn].Score += res
+	game.WhichTurnInTeam[game.WhichTeamTurn] = (game.WhichTurnInTeam[game.WhichTeamTurn] + 1) % len(game.Teams[game.WhichTeamTurn].Players)
+	game.WhichTeamTurn = (game.WhichTeamTurn + 1) % len(game.Teams)
+}
+
+func (game *Game) IsSessionOver() bool {
+	if game.WhichTeamTurn == 0 {
+		return true
+	} else {
+		return false
+	}
 }

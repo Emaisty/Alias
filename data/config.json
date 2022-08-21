@@ -2,5 +2,6 @@
   "language": "En",
   "version": 1,
   "costOfSkip": 0,
-  "timeOfRound": 5
+  "timeOfRound": 5,
+  "targetScore" : 10
 }

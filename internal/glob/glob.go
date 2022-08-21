@@ -25,11 +25,13 @@ type text struct {
 	Guessed        string
 	Start          string
 	NextRound      string
+	EndGame        string
 }
 
 type settings struct {
 	CostOfSkip  int
 	TimeOfRound int
+	TargetScore int
 }
 
 type AllText struct {

@@ -16,6 +16,7 @@ type configurations struct {
 	Version     int
 	CostOfSkip  int
 	TimeOfRound int
+	TargetScore int
 }
 
 func readBytesFromFile(pathToFile string) []byte {
@@ -62,6 +63,7 @@ func initConfigs() {
 
 	glob.Config.TimeOfRound = config.TimeOfRound
 
+	glob.Config.TargetScore = config.TargetScore
 }
 
 type page interface {

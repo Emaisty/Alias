@@ -23,7 +23,8 @@
     "Skip": "Пропустить",
     "Guessed": "Угадано",
     "Start": "Начать раунд",
-    "NextRound": "Следующий раунд"
+    "NextRound": "Следующий раунд",
+    "EndGame" : "Завершить игру"
   },
   "En": {
     "StartGame": "Start game",
@@ -49,6 +50,7 @@
     "Skip": "Skip",
     "Guessed": "Guessed",
     "Start": "Start",
-    "NextRound": "Next round"
+    "NextRound": "Next round",
+    "EndGame" : "End game"
   }
 }

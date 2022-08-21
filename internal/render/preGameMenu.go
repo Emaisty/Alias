@@ -256,7 +256,9 @@ func getTeamFromTable(table *widgets.QTableWidget) ([][]string, bool) {
 				flag = checkCell(table.Item(i, j)) && flag
 			}
 			// Push string from cell into array
-			teams[i] = append(teams[i], table.Item(i, j).Text())
+			if table.Item(i, j).Text() != "" {
+				teams[i] = append(teams[i], table.Item(i, j).Text())
+			}
 		}
 	}
 	if flag {
