@@ -32,6 +32,10 @@ func (page *mainMenuObjects) createObjects() {
 
 // Construct layout from elements and render it on main window
 func (page *mainMenuObjects) render() {
+
+	//create widgets
+	page.createObjects()
+
 	layout := widgets.NewQGridLayout2()
 
 	layout.AddWidget(page.title)
@@ -43,9 +47,6 @@ func (page *mainMenuObjects) render() {
 func (app application) displayMainMenu() {
 	//create main menu objects
 	mainMenu := newMainMenuObjects(app)
-
-	//create widgets
-	mainMenu.createObjects()
 
 	// Construct layout and render it on main window
 	mainMenu.render()

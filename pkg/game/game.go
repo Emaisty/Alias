@@ -34,5 +34,5 @@ func (game *Game) GetCurrentPlayersName() (string, string, string) {
 	currentTeam := game.Teams[game.WhichTeamTurn]
 	return currentTeam.Name,
 		currentTeam.Players[game.WhichTurnInTeam[game.WhichTeamTurn]],
-		currentTeam.Players[game.WhichTurnInTeam[(game.WhichTeamTurn+1)%len(currentTeam.Players)]]
+		currentTeam.Players[(game.WhichTurnInTeam[game.WhichTeamTurn]+1)%len(currentTeam.Players)]
 }

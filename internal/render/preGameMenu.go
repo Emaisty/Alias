@@ -182,6 +182,9 @@ func (page *preGameMenuObjects) createObjects() {
 }
 
 func (page *preGameMenuObjects) render() {
+	// Create widgets for pre game page
+	page.createObjects()
+
 	layout := widgets.NewQGridLayout2()
 
 	layout.AddWidget(page.backButton)
@@ -264,9 +267,6 @@ func getTeamFromTable(table *widgets.QTableWidget) ([][]string, bool) {
 
 func (app application) displayPreGameMenu() {
 	preGameMenu := newPreGameMenuObjects(app)
-
-	// Create widgets for pre game page
-	preGameMenu.createObjects()
 
 	// Display all widgets
 	preGameMenu.render()
