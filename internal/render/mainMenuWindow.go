@@ -5,6 +5,10 @@ import (
 	"github.com/therecipe/qt/widgets"
 )
 
+//================================================================================================================
+// Class block
+
+// widgets on main menu window
 type mainMenuObjects struct {
 	application
 	title           *widgets.QLabel
@@ -17,24 +21,27 @@ func newMainMenuObjects(app application) *mainMenuObjects {
 	return &mainMenu
 }
 
+//================================================================================================================
+// Create and render block
+
 func (page *mainMenuObjects) createStartGameButton() {
 	page.startGameButton = widgets.NewQPushButton2(glob.Text.StartGame, nil)
 
-	//call pre game page, when button pressed
-	page.startGameButton.ConnectPressed(page.application.displayPreGameMenu)
+	//call pre game window, when button pressed
+	page.startGameButton.ConnectPressed(page.application.displayPreGameMenuWindow)
 }
 
-func (page *mainMenuObjects) createObjects() {
+func (page *mainMenuObjects) createWidgets() {
 	page.title = widgets.NewQLabel2("Alias", nil, 0)
 
 	page.createStartGameButton()
 }
 
-// Construct layout from elements and render it on main window
+// Construct layout from widgets and render it on main window
 func (page *mainMenuObjects) render() {
 
 	//create widgets
-	page.createObjects()
+	page.createWidgets()
 
 	layout := widgets.NewQGridLayout2()
 
@@ -44,7 +51,9 @@ func (page *mainMenuObjects) render() {
 	page.application.show(layout)
 }
 
-func (app application) displayMainMenu() {
+//================================================================================================================
+
+func (app application) displayMainMenuWindow() {
 	//create main menu objects
 	mainMenu := newMainMenuObjects(app)
 

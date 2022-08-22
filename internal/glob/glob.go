@@ -29,9 +29,10 @@ type text struct {
 }
 
 type settings struct {
-	CostOfSkip  int
-	TimeOfRound int
-	TargetScore int
+	CostOfGuessing int
+	CostOfSkip     int
+	TimeOfRound    int
+	TargetScore    int
 }
 
 type AllText struct {

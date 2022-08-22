@@ -11,6 +11,9 @@ import (
 	"strconv"
 )
 
+//================================================================================================================
+// Class block
+
 type gamePageObjects struct {
 	application
 	language            string
@@ -46,55 +49,95 @@ func newGamePage(app application, names [][]string, lang int) *gamePageObjects {
 	return &gamePage
 }
 
-func (page *gamePageObjects) createLabels() {
-	page.wordLabel = widgets.NewQLabel2("Word", nil, 0)
-	page.teamNameLabel = widgets.NewQLabel2("Team Name", nil, 0)
-	page.firstPlayerLabel = widgets.NewQLabel2("First Player Name", nil, 0)
-	page.secondPlayerLabel = widgets.NewQLabel2("Second Player Name", nil, 0)
-}
+//================================================================================================================
 
-func (page *gamePageObjects) quitGame() {
-	res := widgets.QMessageBox_Question(nil, glob.Text.Quit, glob.Text.Quit, widgets.QMessageBox__Close|widgets.QMessageBox__No|widgets.QMessageBox__Yes, widgets.QMessageBox__Yes)
-	if res == widgets.QMessageBox__Yes {
-		page.timer.Stop()
-		page.window.DisconnectCloseEvent()
-		page.application.displayMainMenu()
+// randIntervalNoRepeat returns array of integers from [0,r-1] without repeat
+func randIntervalNoRepeat(r int) []int {
+	m := make([]int, r)
+	for i := 1; i < r+1; i++ {
+		j := rand.Intn(i)
+		m[i-1] = m[j]
+		m[j] = i - 1
 	}
+	return m
 }
 
-func (page *gamePageObjects) startRound() {
-	page.timer.Start2()
-	page.roundPageRender()
+// getWordsFromTable . Open db and get from it array of words, which on gamePageObjects.language language
+func getWordsFromTable(lang string) ([]string, []int) {
+	db, _ := sql.Open("sqlite3", "data/words")
+	query, _ := db.Query("SELECT word from words WHERE language = '" + lang + "'")
+	var str string
+	var res []string
+	for query.Next() {
+		query.Scan(&str)
+		res = append(res, str)
+	}
+	return res, randIntervalNoRepeat(len(res))
 }
 
-func (page *gamePageObjects) goNextRound() {
+// Calculate score, which had been received for round
+func (page *gamePageObjects) calculateRoundScore() int {
 	var resultScore int
-	for _, hadBennGuessed := range page.HadBeenGuessed {
-		if hadBennGuessed {
-			resultScore += 1
+	for _, wordHadBeenGuessed := range page.HadBeenGuessed {
+		if wordHadBeenGuessed {
+			resultScore += glob.Config.CostOfGuessing
 		} else {
 			resultScore -= glob.Config.CostOfSkip
 		}
 	}
-	page.game.SaveResultAndGoNext(resultScore)
+	return resultScore
+}
 
-	if page.game.IsSessionOver() {
-		page.resultPageRender()
-	} else {
-		page.render()
+// exit the game to main menu
+func (page *gamePageObjects) exit() {
+	page.timer.Stop()
+	page.window.DisconnectCloseEvent()
+	page.application.displayMainMenuWindow()
+}
+
+// Display time on Board in format MM:SS
+func (page *gamePageObjects) displayTimeOnBoard() {
+	min := page.downCounter / 60
+	sec := page.downCounter % 60
+
+	// Display time on Board in format MM:SS
+	var (
+		minString = strconv.Itoa(min)
+		secString = strconv.Itoa(sec)
+	)
+	if min < 9 {
+		minString = "0" + minString
 	}
-
+	if sec < 9 {
+		secString = "0" + secString
+	}
+	page.timerBoard.Display(minString + ":" + secString)
 }
 
-func (page *gamePageObjects) wordHadBeenGuessed() {
-	page.guessedWords = append(page.guessedWords, page.words[page.currentWord])
-	page.HadBeenGuessed = append(page.HadBeenGuessed, true)
+//================================================================================================================
+// Events
 
-	page.currentWord = (page.currentWord + 1) % len(page.words)
-
-	page.wordLabel.SetText(page.words[page.whichWordChoose[page.currentWord]])
+func (page *gamePageObjects) backToMeinMenuEvent() {
+	res := widgets.QMessageBox_Question(nil, glob.Text.Quit, glob.Text.Quit, widgets.QMessageBox__Close|widgets.QMessageBox__No|widgets.QMessageBox__Yes, widgets.QMessageBox__Yes)
+	if res == widgets.QMessageBox__Yes {
+		page.exit()
+	}
 }
 
+// onTimer calls every tick of the timer (every 1 sec)
+func (page *gamePageObjects) onTimer() {
+	// reduce timer by 1 sec
+	page.downCounter--
+
+	page.displayTimeOnBoard()
+
+	if page.downCounter == 0 {
+		page.timer.Stop()
+		page.postRoundPageRender()
+	}
+}
+
+// skip the word while the round
 func (page *gamePageObjects) wordHadNotBeenGuessed() {
 	page.guessedWords = append(page.guessedWords, page.words[page.currentWord])
 	page.HadBeenGuessed = append(page.HadBeenGuessed, false)
@@ -104,41 +147,72 @@ func (page *gamePageObjects) wordHadNotBeenGuessed() {
 	page.wordLabel.SetText(page.words[page.whichWordChoose[page.currentWord]])
 }
 
-func (page *gamePageObjects) createButtons() {
-	page.forceQuitButton = widgets.NewQPushButton2("<", nil)
-	page.forceQuitButton.ConnectPressed(page.quitGame)
+// guessing the word while the round
+func (page *gamePageObjects) wordHadBeenGuessed() {
+	page.guessedWords = append(page.guessedWords, page.words[page.currentWord])
+	page.HadBeenGuessed = append(page.HadBeenGuessed, true)
 
-	page.skipButton = widgets.NewQPushButton2(glob.Text.Skip, nil)
-	page.skipButton.ConnectPressed(page.wordHadNotBeenGuessed)
+	page.currentWord = (page.currentWord + 1) % len(page.words)
 
-	page.nextWordButton = widgets.NewQPushButton2(glob.Text.Guessed, nil)
-	page.nextWordButton.ConnectPressed(page.wordHadBeenGuessed)
-
-	page.startRoundButton = widgets.NewQPushButton2(glob.Text.Start, nil)
-	page.startRoundButton.ConnectPressed(page.startRound)
-
-	page.goToNextRoundButton = widgets.NewQPushButton2(glob.Text.NextRound, nil)
-	page.goToNextRoundButton.ConnectPressed(page.goNextRound)
+	page.wordLabel.SetText(page.words[page.whichWordChoose[page.currentWord]])
 }
 
-func (page *gamePageObjects) onTimer() {
-	page.downCounter--
+// start round from pre round page
+func (page *gamePageObjects) startRound() {
+	page.timer.Start2()
+	page.roundPageRender()
+}
 
-	min := page.downCounter / 60
-	sec := page.downCounter % 60
+// go to next page (result page or a pre round page)
+func (page *gamePageObjects) goAfterPostGamePage() {
+	resScore := page.calculateRoundScore()
 
-	page.timerBoard.Display(strconv.Itoa(min) + ":" + strconv.Itoa(sec))
+	page.game.SaveResultAndGoNext(resScore)
 
-	if page.downCounter == 0 {
-		page.timer.Stop()
-		page.postRoundPageRender()
+	if page.game.IsSessionOver() {
+		page.resultPageRender()
+	} else {
+		page.render()
 	}
+}
+
+//================================================================================================================
+// Create widgets
+
+func (page *gamePageObjects) createLabels() {
+	page.wordLabel = widgets.NewQLabel2("Word", nil, 0)
+	page.teamNameLabel = widgets.NewQLabel2("Team Name", nil, 0)
+	page.firstPlayerLabel = widgets.NewQLabel2("First Player Name", nil, 0)
+	page.secondPlayerLabel = widgets.NewQLabel2("Second Player Name", nil, 0)
 }
 
 func (page *gamePageObjects) createTimer() {
 	page.timer = core.NewQTimer(nil)
+	// set tick once per sec¬
 	page.timer.SetInterval(1000)
 	page.timer.ConnectTimeout(page.onTimer)
+}
+
+func (page *gamePageObjects) createButtons() {
+	// leave the game to main menu
+	page.forceQuitButton = widgets.NewQPushButton2("<", nil)
+	page.forceQuitButton.ConnectPressed(page.backToMeinMenuEvent)
+
+	// skip the word while the round
+	page.skipButton = widgets.NewQPushButton2(glob.Text.Skip, nil)
+	page.skipButton.ConnectPressed(page.wordHadNotBeenGuessed)
+
+	// guessing the word while the round
+	page.nextWordButton = widgets.NewQPushButton2(glob.Text.Guessed, nil)
+	page.nextWordButton.ConnectPressed(page.wordHadBeenGuessed)
+
+	// start round from pre round page
+	page.startRoundButton = widgets.NewQPushButton2(glob.Text.Start, nil)
+	page.startRoundButton.ConnectPressed(page.startRound)
+
+	// go to next page (result page or a pre round page)
+	page.goToNextRoundButton = widgets.NewQPushButton2(glob.Text.NextRound, nil)
+	page.goToNextRoundButton.ConnectPressed(page.goAfterPostGamePage)
 }
 
 func (page *gamePageObjects) createObjects() {
@@ -149,64 +223,12 @@ func (page *gamePageObjects) createObjects() {
 	page.createTimer()
 
 	page.createButtons()
-
 }
 
-func (page *gamePageObjects) listOfWords(layout *widgets.QGridLayout) {
-	var resultScore int
-	for _, hadBennGuessed := range page.HadBeenGuessed {
-		if hadBennGuessed {
-			resultScore += 1
-		} else {
-			resultScore -= glob.Config.CostOfSkip
-		}
-	}
-
-	resLabel := widgets.NewQLabel2(strconv.Itoa(resultScore), nil, 0)
-
-	layout.AddWidget(resLabel)
-
-	for i, word := range page.guessedWords {
-		wordLabel := widgets.NewQLabel2(word, nil, 0)
-		isWordGuessed := widgets.NewQCheckBox(nil)
-		isWordGuessed.SetChecked(page.HadBeenGuessed[i])
-		isWordGuessed.ConnectClicked(func(checked bool) {
-			page.HadBeenGuessed[i] = checked
-			if checked {
-				resultScore += glob.Config.CostOfSkip + 1
-			} else {
-				resultScore -= glob.Config.CostOfSkip + 1
-			}
-			resLabel.SetText(strconv.Itoa(resultScore))
-		})
-		layout.AddWidget(wordLabel)
-		layout.AddWidget(isWordGuessed)
-	}
-}
-
-func (page *gamePageObjects) postRoundPageRender() {
-	layout := widgets.NewQGridLayout2()
-
-	layout.AddWidget(page.forceQuitButton)
-
-	page.listOfWords(layout)
-
-	layout.AddWidget(page.goToNextRoundButton)
-
-	page.application.show(layout)
-}
-
-func (page *gamePageObjects) resultPageRender() {
-	layout := widgets.NewQGridLayout2()
-
-	layout.AddWidget(page.forceQuitButton)
-
-	targetLabel := widgets.NewQLabel2("Target is "+strconv.Itoa(glob.Config.TargetScore), nil, 0)
-
-	layout.AddWidget(targetLabel)
-
+func (page *gamePageObjects) createLabelsWithTeamsAndTheirResults(layout *widgets.QGridLayout) {
 	var maxScore int
 
+	// for each team display their team and players name
 	for _, team := range page.game.Teams {
 		layout.AddWidget(widgets.NewQLabel2(team.Name, nil, 0))
 		layout.AddWidget(widgets.NewQLabel2(team.Players[0], nil, 0))
@@ -214,28 +236,131 @@ func (page *gamePageObjects) resultPageRender() {
 		if len(team.Players) == 3 {
 			layout.AddWidget(widgets.NewQLabel2(team.Players[2], nil, 0))
 		}
+		layout.AddWidget(widgets.NewQLabel2(strconv.Itoa(team.Score), nil, 0))
+
+		// find max score
 		if team.Score > maxScore {
 			maxScore = team.Score
 		}
-		layout.AddWidget(widgets.NewQLabel2(strconv.Itoa(team.Score), nil, 0))
 	}
 	nextActionButton := widgets.NewQPushButton(nil)
+
+	// If score of any team MORE than target score - set on button action to end the game
+	// if score LESS - continue the game, go to next session
 	if maxScore > glob.Config.TargetScore {
 		nextActionButton.SetText(glob.Text.EndGame)
-		nextActionButton.ConnectPressed(func() {
-			page.application.window.DisconnectCloseEvent()
-			page.application.displayMainMenu()
-		})
+		nextActionButton.ConnectPressed(page.exit)
 	} else {
 		nextActionButton.SetText(glob.Text.NextRound)
 		nextActionButton.ConnectPressed(page.render)
 	}
+
 	layout.AddWidget(nextActionButton)
+}
+
+//================================================================================================================
+// Render
+
+// resultPageRender calls after each session (all team played 1 round)
+// Displays all teams with players names and their score
+func (page *gamePageObjects) resultPageRender() {
+	// Label, which display required result to end the match
+	targetLabel := widgets.NewQLabel2("Target is "+strconv.Itoa(glob.Config.TargetScore), nil, 0)
+
+	layout := widgets.NewQGridLayout2()
+
+	layout.AddWidget(page.forceQuitButton)
+
+	layout.AddWidget(targetLabel)
+
+	page.createLabelsWithTeamsAndTheirResults(layout)
 
 	page.application.show(layout)
 }
 
+// renderListOfWords display words on post round page
+// Status of word (guessed/skipped) can be changed by using check box
+func (page *gamePageObjects) renderListOfWords(layout *widgets.QGridLayout) {
+
+	resScore := page.calculateRoundScore()
+
+	resLabel := widgets.NewQLabel2(strconv.Itoa(resScore), nil, 0)
+
+	layout.AddWidget(resLabel)
+
+	// Display all words and check box near them
+	// Check box: checked - word had been guessed. not checked - had been skipped
+	for i, word := range page.guessedWords {
+		// Label with word
+		wordLabel := widgets.NewQLabel2(word, nil, 0)
+		// Create check box
+		isWordGuessed := widgets.NewQCheckBox(nil)
+		// If word had been guessed - set checked
+		isWordGuessed.SetChecked(page.HadBeenGuessed[i])
+		// Connect change of check box. Checked - word had been guessed. Not - skipped
+		// Recalculate result score
+		isWordGuessed.ConnectClicked(func(checked bool) {
+			page.HadBeenGuessed[i] = checked
+			if checked {
+				resScore += glob.Config.CostOfSkip + glob.Config.CostOfGuessing
+			} else {
+				resScore -= glob.Config.CostOfSkip + glob.Config.CostOfGuessing
+			}
+			resLabel.SetText(strconv.Itoa(resScore))
+		})
+
+		layout.AddWidget(wordLabel)
+		layout.AddWidget(isWordGuessed)
+	}
+}
+
+// Render post round page. Display score and words. Can rechoose, which had been guessed, and which not
+func (page *gamePageObjects) postRoundPageRender() {
+	layout := widgets.NewQGridLayout2()
+
+	layout.AddWidget(page.forceQuitButton)
+
+	page.renderListOfWords(layout)
+
+	layout.AddWidget(page.goToNextRoundButton)
+
+	page.application.show(layout)
+}
+
+// Set on timer start time
+func (page *gamePageObjects) prepareTimerForNewRound() {
+	page.downCounter = glob.Config.TimeOfRound
+
+	// Display time on Board in format MM:SS
+	page.displayTimeOnBoard()
+
+}
+
+// Load words from db and shuffle them
+func (page *gamePageObjects) prepareWordsForNewRound() {
+	// load words from db and random shuffle for words
+	page.words, page.whichWordChoose = getWordsFromTable(page.language)
+	page.currentWord = 0
+
+	// clear array for guessed words
+	page.guessedWords = make([]string, 0)
+	page.HadBeenGuessed = make([]bool, 0)
+
+	// set 1st word to label
+	page.wordLabel.SetText(page.words[page.whichWordChoose[page.currentWord]])
+
+}
+
+// Render round page. Display timer, word and 2 buttons: skip and next word.
+// When timer will be over - will call postRoundPageRender()
+// Skip button - skip word (player2 had not guessed) and display new word
+// next word - displays new word
 func (page *gamePageObjects) roundPageRender() {
+
+	page.prepareTimerForNewRound()
+
+	page.prepareWordsForNewRound()
+
 	layout := widgets.NewQGridLayout2()
 
 	layout.AddWidget(page.forceQuitButton)
@@ -247,69 +372,20 @@ func (page *gamePageObjects) roundPageRender() {
 	page.application.show(layout)
 }
 
-func (page *gamePageObjects) prepareTimerForNewRound() {
-	page.downCounter = glob.Config.TimeOfRound
-
-	min := page.downCounter / 60
-	sec := page.downCounter % 60
-
-	page.timerBoard.Display(strconv.Itoa(min) + ":" + strconv.Itoa(sec))
-
-}
-
-func randInterval_norepeat(r int) []int {
-	m := make([]int, r)
-	for i := 1; i < r+1; i++ {
-		j := rand.Intn(i)
-		m[i-1] = m[j]
-		m[j] = i - 1
-	}
-	return m
-}
-
-func getWordsFromTable(lang string) ([]string, []int) {
-	db, err := sql.Open("sqlite3", "data/words")
-	if err != nil {
-		panic(err.Error())
-
-	}
-	query, errr := db.Query("SELECT word from words WHERE language = '" + lang + "'")
-	if errr != nil {
-		panic(err.Error())
-	}
-	var str string
-	var res []string
-	for query.Next() {
-		query.Scan(&str)
-		res = append(res, str)
-	}
-	return res, randInterval_norepeat(len(res))
-}
-
-func (page *gamePageObjects) prepareWordsForNewRound() {
-	page.words, page.whichWordChoose = getWordsFromTable(page.language)
-	page.currentWord = 0
-
-	page.guessedWords = make([]string, 0)
-	page.HadBeenGuessed = make([]bool, 0)
-
-	page.wordLabel.SetText(page.words[page.whichWordChoose[page.currentWord]])
-
-}
-
-func (page *gamePageObjects) preRoundPageRender() {
-	layout := widgets.NewQGridLayout2()
-
+// Set Team, who explains and who guessing names to labels
+func (page *gamePageObjects) preparePreRoundLabels() {
 	teamName, firstPlayerName, SecondPlayerName := page.game.GetCurrentPlayersName()
-
-	// Prepare timer for new round
-	page.prepareTimerForNewRound()
-
-	page.prepareWordsForNewRound()
 
 	page.teamNameLabel.SetText(teamName)
 	page.firstPlayerLabel.SetText(firstPlayerName)
 	page.secondPlayerLabel.SetText(SecondPlayerName)
+}
+
+// Render pre round page. Display Team, player1 and player2 names
+func (page *gamePageObjects) preRoundPageRender() {
+	page.preparePreRoundLabels()
+
+	layout := widgets.NewQGridLayout2()
 
 	layout.AddWidget(page.forceQuitButton)
 	layout.AddWidget(page.teamNameLabel)
@@ -325,6 +401,8 @@ func (page *gamePageObjects) render() {
 
 	page.preRoundPageRender()
 }
+
+//================================================================================================================
 
 // parent - window of app; teamName - raw array with names. NewGame([][]string) will work with it;
 // language: 0 - Ru, 1 - En
