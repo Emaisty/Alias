@@ -43,6 +43,8 @@ func readBytesFromFile(pathToFile string) []byte {
 }
 
 func setGlobalConfiguration(config configurations) {
+	glob.Config.CostOfGuessing = config.CostOfGuessing
+
 	glob.Config.CostOfSkip = config.CostOfSkip
 
 	glob.Config.TimeOfRound = config.TimeOfRound

@@ -229,25 +229,25 @@ func (page *gamePageObjects) createLabelsWithTeamsAndTheirResults(layout *widget
 	var maxScore int
 
 	// for each team display their team and players name
-	for _, team := range page.game.Teams {
-		layout.AddWidget(widgets.NewQLabel2(team.Name, nil, 0))
-		layout.AddWidget(widgets.NewQLabel2(team.Players[0], nil, 0))
-		layout.AddWidget(widgets.NewQLabel2(team.Players[1], nil, 0))
-		if len(team.Players) == 3 {
-			layout.AddWidget(widgets.NewQLabel2(team.Players[2], nil, 0))
+	teams := page.game.GetTeamsAndTheirResult()
+
+	for _, team := range teams {
+		for i := 1; i < len(team); i++ {
+			layout.AddWidget(widgets.NewQLabel2(team[i], nil, 0))
 		}
-		layout.AddWidget(widgets.NewQLabel2(strconv.Itoa(team.Score), nil, 0))
+		layout.AddWidget(widgets.NewQLabel2(team[0], nil, 0))
 
 		// find max score
-		if team.Score > maxScore {
-			maxScore = team.Score
+		teamScore, _ := strconv.Atoi(team[0])
+		if teamScore > maxScore {
+			maxScore = teamScore
 		}
 	}
 	nextActionButton := widgets.NewQPushButton(nil)
 
-	// If score of any team MORE than target score - set on button action to end the game
+	// If score of any team MORE OR EQ than target score - set on button action to end the game
 	// if score LESS - continue the game, go to next session
-	if maxScore > glob.Config.TargetScore {
+	if maxScore >= glob.Config.TargetScore {
 		nextActionButton.SetText(glob.Text.EndGame)
 		nextActionButton.ConnectPressed(page.exit)
 	} else {
