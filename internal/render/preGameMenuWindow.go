@@ -12,16 +12,18 @@ import (
 
 type preGameMenuObjects struct {
 	application
-	backButton         *widgets.QPushButton
-	title              *widgets.QLabel
-	modeComboBox       *widgets.QComboBox
-	howManyTeamLabel   *widgets.QLabel
-	howManyTeamSpinBox *widgets.QSpinBox
-	languageComboBox   *widgets.QComboBox
-	difficultyLabel    *widgets.QLabel
-	difficultyComboBox *widgets.QComboBox
-	startGameButton    *widgets.QPushButton
-	table              *widgets.QTableWidget
+	backButton           *widgets.QPushButton
+	title                *widgets.QLabel
+	modeComboBox         *widgets.QComboBox
+	modeOfAGameLabel     *widgets.QLabel
+	howManyTeamLabel     *widgets.QLabel
+	languageOfAGameLabel *widgets.QLabel
+	difficultyLabel      *widgets.QLabel
+	howManyTeamSpinBox   *widgets.QSpinBox
+	languageComboBox     *widgets.QComboBox
+	difficultyComboBox   *widgets.QComboBox
+	startGameButton      *widgets.QPushButton
+	table                *widgets.QTableWidget
 }
 
 func newPreGameMenuObjects(app application) *preGameMenuObjects {
@@ -116,11 +118,10 @@ func (page *preGameMenuObjects) prepareTableForTeamMode() {
 	page.changeRows()
 
 	// Set names for a columns
-	namesForColumns := [4]string{glob.Text.TeamName, glob.Text.FirstPlayer, glob.Text.SecondPlayer,
-		glob.Text.ThirdPlayer}
+	namesForColumns := glob.Text.ColumnsForTeamMode
 	for i := 0; i < 4; i++ {
 		page.table.SetHorizontalHeaderItem(i, widgets.NewQTableWidgetItem2(namesForColumns[i], 1))
-		page.table.SetColumnWidth(i, 200)
+		//page.table.SetColumnWidth(i, 200)
 	}
 }
 
@@ -135,7 +136,7 @@ func (page *preGameMenuObjects) prepareTableForSoloMode() {
 
 	// Set name for columns
 	page.table.SetHorizontalHeaderItem(0, widgets.NewQTableWidgetItem2(glob.Text.PlayerName, 1))
-	page.table.SetColumnWidth(0, 200)
+	//page.table.SetColumnWidth(0, 200)
 }
 
 //================================================================================================================
@@ -199,7 +200,8 @@ func (page *preGameMenuObjects) createComboBoxes() {
 // Spin Box connected to table and when value changed - changing count of rows
 func (page *preGameMenuObjects) createSpinBox() {
 	page.howManyTeamSpinBox = widgets.NewQSpinBox(nil)
-	page.howManyTeamSpinBox.SetMaximumWidth(50)
+	//page.howManyTeamSpinBox.SetMaximumWidth(50)
+	page.howManyTeamSpinBox.SetFixedWidth(50)
 	page.howManyTeamSpinBox.SetValueDefault(1)
 	page.howManyTeamSpinBox.SetMinimum(2)
 	page.howManyTeamSpinBox.SetMaximum(9)
@@ -212,18 +214,18 @@ func (page *preGameMenuObjects) createTable() {
 
 	// Create table and set parameters to it
 	page.table = widgets.NewQTableWidget2(0, 4, nil)
-	page.table.SetMinimumHeight(1000)
-	page.table.SetMinimumWidth(830)
+	//page.table.SetMinimumHeight(1000)
+	//page.table.SetMinimumWidth(830)
 	page.table.ConnectCellPressed(page.cellPressed)
 
 	// Set names to table columns
-	namesForColumns := [4]string{glob.Text.TeamName, glob.Text.FirstPlayer, glob.Text.SecondPlayer,
-		glob.Text.ThirdPlayer}
+	namesForColumns := glob.Text.ColumnsForTeamMode
 	for i := 0; i < 4; i++ {
 		page.table.SetHorizontalHeaderItem(i, widgets.NewQTableWidgetItem2(namesForColumns[i], 1))
-		page.table.SetColumnWidth(i, 200)
+		//page.table.SetColumnWidth(i, 200)
 	}
 
+	page.table.HorizontalHeader().SetSectionResizeMode(widgets.QHeaderView__Stretch)
 	// Insert first 2 rows into table
 	insertRow(page.table, 0)
 	insertRow(page.table, 1)
@@ -233,17 +235,29 @@ func (page *preGameMenuObjects) createTable() {
 func (page *preGameMenuObjects) createHeader() {
 	page.backButton = widgets.NewQPushButton(nil)
 	page.backButton.SetText("<")
+	page.backButton.SetFixedWidth(50)
+
 	page.backButton.ConnectPressed(page.application.displayMainMenuWindow)
 
 	page.title = widgets.NewQLabel2(glob.Text.PreGame, nil, 0)
+	// Create font style for label
+	font := gui.NewQFont()
+	font.SetPointSize(42)
+
+	page.title.SetFont(font)
+
+	// Create labels. Uses only for more friendly UI
+	page.modeOfAGameLabel = widgets.NewQLabel2(glob.Text.GameMode, nil, 0)
+
+	page.howManyTeamLabel = widgets.NewQLabel2(glob.Text.HowManyTeams, nil, 0)
+
+	page.languageOfAGameLabel = widgets.NewQLabel2(glob.Text.Language, nil, 0)
+
+	page.difficultyLabel = widgets.NewQLabel2(glob.Text.Difficulty, nil, 0)
 }
 
 // Create table for teams/players names, buttons to control modes etc.
 func (page *preGameMenuObjects) createBodyOfPage() {
-	// Create labels. Uses only for more friendly UI
-	page.howManyTeamLabel = widgets.NewQLabel2(glob.Text.HowManyTeams, nil, 0)
-
-	page.difficultyLabel = widgets.NewQLabel2(glob.Text.Difficulty, nil, 0)
 
 	// Create table with teams/players names
 	page.createTable()
@@ -258,6 +272,7 @@ func (page *preGameMenuObjects) createBodyOfPage() {
 	page.startGameButton = widgets.NewQPushButton(nil)
 	page.startGameButton.SetText(glob.Text.StartGame)
 	page.startGameButton.ConnectPressed(page.runGame)
+	page.startGameButton.SetFixedHeight(75)
 }
 
 func (page *preGameMenuObjects) createWidgets() {
@@ -270,16 +285,25 @@ func (page *preGameMenuObjects) render() {
 
 	layout := widgets.NewQGridLayout2()
 
-	layout.AddWidget(page.backButton)
-	layout.AddWidget(page.title)
-	layout.AddWidget(page.modeComboBox)
-	layout.AddWidget(page.howManyTeamLabel)
-	layout.AddWidget(page.howManyTeamSpinBox)
-	layout.AddWidget(page.languageComboBox)
-	layout.AddWidget(page.difficultyLabel)
-	layout.AddWidget(page.difficultyComboBox)
-	layout.AddWidget(page.table)
-	layout.AddWidget(page.startGameButton)
+	// back button and title
+	layout.AddWidget2(page.backButton, 0, 0, core.Qt__AlignLeft)
+	layout.AddWidget2(page.title, 0, 2, 0)
+
+	// Labels
+	layout.AddWidget2(page.modeOfAGameLabel, 1, 0, core.Qt__AlignCenter)
+	layout.AddWidget2(page.howManyTeamLabel, 1, 1, core.Qt__AlignCenter)
+	layout.AddWidget2(page.languageOfAGameLabel, 1, 3, core.Qt__AlignCenter)
+	layout.AddWidget2(page.difficultyLabel, 1, 4, core.Qt__AlignCenter)
+
+	// Widgets with settings for a game
+	layout.AddWidget2(page.modeComboBox, 2, 0, core.Qt__AlignCenter)
+	layout.AddWidget2(page.howManyTeamSpinBox, 2, 1, core.Qt__AlignCenter)
+	layout.AddWidget2(page.languageComboBox, 2, 3, core.Qt__AlignCenter)
+	layout.AddWidget2(page.difficultyComboBox, 2, 4, core.Qt__AlignCenter)
+
+	//table and button to start a game
+	layout.AddWidget3(page.table, 3, 0, 1, 5, 0)
+	layout.AddWidget2(page.startGameButton, 4, 2, 0)
 
 	page.application.show(layout)
 }

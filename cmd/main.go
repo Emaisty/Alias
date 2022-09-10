@@ -1,6 +1,8 @@
 package main
 
-import "Alias/internal/render"
+import (
+	"Alias/internal/render"
+)
 
 func main() {
 	app := render.NewApplication()

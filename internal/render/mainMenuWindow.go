@@ -2,6 +2,8 @@ package render
 
 import (
 	"Alias/internal/glob"
+	"github.com/therecipe/qt/core"
+	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/widgets"
 )
 
@@ -29,10 +31,18 @@ func (page *mainMenuObjects) createStartGameButton() {
 
 	//call pre game window, when button pressed
 	page.startGameButton.ConnectPressed(page.application.displayPreGameMenuWindow)
+
+	page.startGameButton.SetFixedSize(core.NewQSize2(300, 75))
 }
 
 func (page *mainMenuObjects) createWidgets() {
 	page.title = widgets.NewQLabel2("Alias", nil, 0)
+
+	// Create font style for label
+	font := gui.NewQFont()
+	font.SetPointSize(72)
+
+	page.title.SetFont(font)
 
 	page.createStartGameButton()
 }
@@ -45,8 +55,8 @@ func (page *mainMenuObjects) render() {
 
 	layout := widgets.NewQGridLayout2()
 
-	layout.AddWidget(page.title)
-	layout.AddWidget(page.startGameButton)
+	layout.AddWidget2(page.title, 0, 0, core.Qt__AlignCenter|core.Qt__AlignTop)
+	layout.AddWidget2(page.startGameButton, 1, 0, core.Qt__AlignCenter)
 
 	page.application.show(layout)
 }
