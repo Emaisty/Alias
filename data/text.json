@@ -5,11 +5,13 @@
     "PreGame": "Подготовка к игре",
     "HowManyPlayers": "Кол-во игроков",
     "HowManyTeams": "Кол-во команд",
-    "GameMode" : "Режим игры",
-    "SoloMode": "Одиночный режим",
-    "TeamMode": "Командный режим",
+    "GameMode": "Режим игры",
+    "GameModes" : [
+      "Одиночный режим",
+      "Командный режим"
+    ],
     "PlayerName": "Имя игрока",
-    "ColumnsForTeamMode" : [
+    "ColumnsForTeamMode": [
       "Название команды",
       "Первый игрок",
       "Второй игрок",
@@ -17,17 +19,25 @@
     ],
     "AddThirdPlayer": "Добавить 3-го игрока",
     "Language": "Язык",
-    "Russian": "Русский",
-    "English": "Англиский",
+    "Languages": [
+      "Русский",
+      "Англиский"
+    ],
     "Difficulty": "Уровень сложности",
+    "LevelsOfDifficulty": [
+      "Легкий",
+      "Средний",
+      "Сложный"
+    ],
     "Quit": "Закрыть?",
     "AUSureExit": "Вы уверены, что хотите выйти?",
     "AUSureQuit": "Вы уверены, что хотите закончить игру?",
+    "Guesser" : "Угадывающий:",
     "Skip": "Пропустить",
     "Guessed": "Угадано",
     "Start": "Начать раунд",
     "NextRound": "Следующий раунд",
-    "EndGame" : "Завершить игру"
+    "EndGame": "Завершить игру"
   },
   "En": {
     "StartGame": "Start game",
@@ -35,11 +45,13 @@
     "PreGame": "Pre Game",
     "HowManyPlayers": "How many players",
     "HowManyTeams": "How many teams",
-    "GameMode" : "Game mode",
-    "SoloMode": "Solo mode",
-    "TeamMode": "Team mode",
+    "GameMode": "Game mode",
+    "GameModes" : [
+      "Solo mode",
+      "Team mode"
+    ],
     "PlayerName": "Player name",
-    "ColumnsForTeamMode" : [
+    "ColumnsForTeamMode": [
       "Team name",
       "First player",
       "Second player",
@@ -47,16 +59,24 @@
     ],
     "AddThirdPlayer": "Add 3rd player",
     "Language": "Language",
-    "Russian": "Russian",
-    "English": "English",
+    "Languages": [
+      "Russian",
+      "English"
+    ],
     "Difficulty": "Difficulty",
+    "LevelsOfDifficulty": [
+      "Easy",
+      "Medium",
+      "Hard"
+    ],
     "Quit": "Quit?",
     "AUSureExit": "Are you sure you want to exit?",
     "AUSureQuit": "Are you sure you want to quit game?",
+    "Guesser" : "Guesser:",
     "Skip": "Skip",
     "Guessed": "Guessed",
     "Start": "Start",
     "NextRound": "Next round",
-    "EndGame" : "End game"
+    "EndGame": "End game"
   }
 }

@@ -121,7 +121,6 @@ func (page *preGameMenuObjects) prepareTableForTeamMode() {
 	namesForColumns := glob.Text.ColumnsForTeamMode
 	for i := 0; i < 4; i++ {
 		page.table.SetHorizontalHeaderItem(i, widgets.NewQTableWidgetItem2(namesForColumns[i], 1))
-		//page.table.SetColumnWidth(i, 200)
 	}
 }
 
@@ -136,7 +135,6 @@ func (page *preGameMenuObjects) prepareTableForSoloMode() {
 
 	// Set name for columns
 	page.table.SetHorizontalHeaderItem(0, widgets.NewQTableWidgetItem2(glob.Text.PlayerName, 1))
-	//page.table.SetColumnWidth(0, 200)
 }
 
 //================================================================================================================
@@ -187,20 +185,19 @@ func (page *preGameMenuObjects) runGame() {
 
 func (page *preGameMenuObjects) createComboBoxes() {
 	page.modeComboBox = widgets.NewQComboBox(nil)
-	page.modeComboBox.AddItems([]string{glob.Text.TeamMode, glob.Text.SoloMode})
+	page.modeComboBox.AddItems(glob.Text.GameModes)
 	page.modeComboBox.ConnectCurrentIndexChanged(page.modeChanged)
 
 	page.languageComboBox = widgets.NewQComboBox(nil)
-	page.languageComboBox.AddItems([]string{glob.Text.Russian, glob.Text.English})
+	page.languageComboBox.AddItems(glob.Text.Languages)
 
 	page.difficultyComboBox = widgets.NewQComboBox(nil)
-	page.difficultyComboBox.AddItems([]string{"1", "2", "3"})
+	page.difficultyComboBox.AddItems(glob.Text.LevelsOfDifficulty)
 }
 
 // Spin Box connected to table and when value changed - changing count of rows
 func (page *preGameMenuObjects) createSpinBox() {
 	page.howManyTeamSpinBox = widgets.NewQSpinBox(nil)
-	//page.howManyTeamSpinBox.SetMaximumWidth(50)
 	page.howManyTeamSpinBox.SetFixedWidth(50)
 	page.howManyTeamSpinBox.SetValueDefault(1)
 	page.howManyTeamSpinBox.SetMinimum(2)
@@ -214,15 +211,12 @@ func (page *preGameMenuObjects) createTable() {
 
 	// Create table and set parameters to it
 	page.table = widgets.NewQTableWidget2(0, 4, nil)
-	//page.table.SetMinimumHeight(1000)
-	//page.table.SetMinimumWidth(830)
 	page.table.ConnectCellPressed(page.cellPressed)
 
 	// Set names to table columns
 	namesForColumns := glob.Text.ColumnsForTeamMode
 	for i := 0; i < 4; i++ {
 		page.table.SetHorizontalHeaderItem(i, widgets.NewQTableWidgetItem2(namesForColumns[i], 1))
-		//page.table.SetColumnWidth(i, 200)
 	}
 
 	page.table.HorizontalHeader().SetSectionResizeMode(widgets.QHeaderView__Stretch)

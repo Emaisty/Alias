@@ -6,8 +6,8 @@ import (
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/therecipe/qt/core"
+	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/widgets"
-	"math/rand"
 	"strconv"
 )
 
@@ -26,6 +26,7 @@ type gamePageObjects struct {
 	guessedWords        []string
 	HadBeenGuessed      []bool
 	timerBoard          *widgets.QLCDNumber
+	guesserLabel        *widgets.QLabel
 	wordLabel           *widgets.QLabel
 	teamNameLabel       *widgets.QLabel
 	firstPlayerLabel    *widgets.QLabel
@@ -51,17 +52,6 @@ func newGamePage(app application, names [][]string, lang int) *gamePageObjects {
 
 //================================================================================================================
 
-// randIntervalNoRepeat returns array of integers from [0,r-1] without repeat
-func randIntervalNoRepeat(r int) []int {
-	m := make([]int, r)
-	for i := 1; i < r+1; i++ {
-		j := rand.Intn(i)
-		m[i-1] = m[j]
-		m[j] = i - 1
-	}
-	return m
-}
-
 // getWordsFromTable . Open db and get from it array of words, which on gamePageObjects.language language
 func getWordsFromTable(lang string) ([]string, []int) {
 	db, _ := sql.Open("sqlite3", "data/words")
@@ -72,7 +62,7 @@ func getWordsFromTable(lang string) ([]string, []int) {
 		query.Scan(&str)
 		res = append(res, str)
 	}
-	return res, randIntervalNoRepeat(len(res))
+	return res, glob.RandIntervalNoRepeat(len(res))
 }
 
 // Calculate score, which had been received for round
@@ -184,6 +174,7 @@ func (page *gamePageObjects) createLabels() {
 	page.teamNameLabel = widgets.NewQLabel2("Team Name", nil, 0)
 	page.firstPlayerLabel = widgets.NewQLabel2("First Player Name", nil, 0)
 	page.secondPlayerLabel = widgets.NewQLabel2("Second Player Name", nil, 0)
+	page.guesserLabel = widgets.NewQLabel2(glob.Text.Guesser, nil, 0)
 }
 
 func (page *gamePageObjects) createTimer() {
@@ -197,6 +188,7 @@ func (page *gamePageObjects) createButtons() {
 	// leave the game to main menu
 	page.forceQuitButton = widgets.NewQPushButton2("<", nil)
 	page.forceQuitButton.ConnectPressed(page.backToMeinMenuEvent)
+	page.forceQuitButton.SetFixedWidth(50)
 
 	// skip the word while the round
 	page.skipButton = widgets.NewQPushButton2(glob.Text.Skip, nil)
@@ -209,6 +201,7 @@ func (page *gamePageObjects) createButtons() {
 	// start round from pre round page
 	page.startRoundButton = widgets.NewQPushButton2(glob.Text.Start, nil)
 	page.startRoundButton.ConnectPressed(page.startRound)
+	page.startRoundButton.SetFixedSize(core.NewQSize2(300, 75))
 
 	// go to next page (result page or a pre round page)
 	page.goToNextRoundButton = widgets.NewQPushButton2(glob.Text.NextRound, nil)
@@ -374,11 +367,23 @@ func (page *gamePageObjects) roundPageRender() {
 
 // Set Team, who explains and who guessing names to labels
 func (page *gamePageObjects) preparePreRoundLabels() {
+	font := gui.NewQFont()
 	teamName, firstPlayerName, SecondPlayerName := page.game.GetCurrentPlayersName()
 
 	page.teamNameLabel.SetText(teamName)
+	font.SetPointSize(48)
+	page.teamNameLabel.SetFont(font)
+
 	page.firstPlayerLabel.SetText(firstPlayerName)
+	font.SetPointSize(28)
+	page.firstPlayerLabel.SetFont(font)
+
 	page.secondPlayerLabel.SetText(SecondPlayerName)
+	font.SetPointSize(28)
+	page.secondPlayerLabel.SetFont(font)
+
+	font.SetPointSize(20)
+	page.guesserLabel.SetFont(font)
 }
 
 // Render pre round page. Display Team, player1 and player2 names
@@ -387,11 +392,12 @@ func (page *gamePageObjects) preRoundPageRender() {
 
 	layout := widgets.NewQGridLayout2()
 
-	layout.AddWidget(page.forceQuitButton)
-	layout.AddWidget(page.teamNameLabel)
-	layout.AddWidget(page.firstPlayerLabel)
-	layout.AddWidget(page.secondPlayerLabel)
-	layout.AddWidget(page.startRoundButton)
+	layout.AddWidget2(page.forceQuitButton, 0, 0, core.Qt__AlignLeft)
+	layout.AddWidget2(page.teamNameLabel, 1, 2, core.Qt__AlignCenter)
+	layout.AddWidget2(page.guesserLabel, 2, 3, core.Qt__AlignCenter)
+	layout.AddWidget2(page.firstPlayerLabel, 3, 1, core.Qt__AlignCenter)
+	layout.AddWidget2(page.secondPlayerLabel, 3, 3, core.Qt__AlignCenter)
+	layout.AddWidget3(page.startRoundButton, 4, 0, 5, 5, core.Qt__AlignCenter)
 
 	page.application.show(layout)
 }
