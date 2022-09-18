@@ -7,8 +7,8 @@
     "HowManyTeams": "Кол-во команд",
     "GameMode": "Режим игры",
     "GameModes" : [
-      "Одиночный режим",
-      "Командный режим"
+      "Командный режим",
+      "Одиночный режим"
     ],
     "PlayerName": "Имя игрока",
     "ColumnsForTeamMode": [
@@ -47,8 +47,8 @@
     "HowManyTeams": "How many teams",
     "GameMode": "Game mode",
     "GameModes" : [
-      "Solo mode",
-      "Team mode"
+      "Team mode",
+      "Solo mode"
     ],
     "PlayerName": "Player name",
     "ColumnsForTeamMode": [
