@@ -54,7 +54,7 @@ func newGamePage(app application, names [][]string, lang int) *gamePageObjects {
 
 // getWordsFromTable . Open db and get from it array of words, which on gamePageObjects.language language
 func getWordsFromTable(lang string) ([]string, []int) {
-	db, _ := sql.Open("sqlite3", "data/words")
+	db, _ := sql.Open("sqlite3", core.QCoreApplication_ApplicationDirPath()+"/../Resources/words")
 	query, _ := db.Query("SELECT word from words WHERE language = '" + lang + "'")
 	var str string
 	var res []string
