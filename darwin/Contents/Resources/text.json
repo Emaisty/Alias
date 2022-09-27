@@ -1,0 +1,82 @@
+{
+  "Ru": {
+    "StartGame": "Начать игру",
+    "Settings": "Настройки",
+    "PreGame": "Подготовка к игре",
+    "HowManyPlayers": "Кол-во игроков",
+    "HowManyTeams": "Кол-во команд",
+    "GameMode": "Режим игры",
+    "GameModes" : [
+      "Командный режим",
+      "Одиночный режим"
+    ],
+    "PlayerName": "Имя игрока",
+    "ColumnsForTeamMode": [
+      "Название команды",
+      "Первый игрок",
+      "Второй игрок",
+      "Третий игрок(опционально)"
+    ],
+    "AddThirdPlayer": "Добавить 3-го игрока",
+    "Language": "Язык",
+    "Languages": [
+      "Русский",
+      "Англиский"
+    ],
+    "Difficulty": "Уровень сложности",
+    "LevelsOfDifficulty": [
+      "Легкий",
+      "Средний",
+      "Сложный"
+    ],
+    "Quit": "Закрыть?",
+    "AUSureExit": "Вы уверены, что хотите выйти?",
+    "AUSureQuit": "Вы уверены, что хотите закончить игру?",
+    "Guesser" : "Угадывающий:",
+    "Skip": "Пропустить",
+    "Guessed": "Угадано",
+    "Start": "Начать раунд",
+    "NextRound": "Следующий раунд",
+    "EndGame": "Завершить игру"
+  },
+  "En": {
+    "StartGame": "Start game",
+    "Settings": "Settings",
+    "PreGame": "Pre Game",
+    "HowManyPlayers": "How many players",
+    "HowManyTeams": "How many teams",
+    "GameMode": "Game mode",
+    "GameModes" : [
+      "Team mode",
+      "Solo mode"
+    ],
+    "PlayerName": "Player name",
+    "ColumnsForTeamMode": [
+      "Team name",
+      "First player",
+      "Second player",
+      "Third player (optional)"
+    ],
+    "AddThirdPlayer": "Add 3rd player",
+    "Language": "Language",
+    "Languages": [
+      "Russian",
+      "English"
+    ],
+    "Difficulty": "Difficulty",
+    "LevelsOfDifficulty": [
+      "Easy",
+      "Medium",
+      "Hard"
+    ],
+    "Quit": "Quit?",
+    "AUSureExit": "Are you sure you want to exit?",
+    "AUSureQuit": "Are you sure you want to quit game?",
+    "Guesser" : "Guesser:",
+    "Skip": "Skip",
+    "Guessed": "Guessed",
+    "Start": "Start",
+    "NextRound": "Next round",
+    "EndGame": "End game"
+  }
+}
