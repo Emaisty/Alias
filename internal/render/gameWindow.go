@@ -224,39 +224,6 @@ func (page *gamePageObjects) createObjects() {
 	page.createButtons()
 }
 
-func (page *gamePageObjects) createLabelsWithTeamsAndTheirResults(layout *widgets.QGridLayout) {
-	var maxScore int
-
-	// for each team display their team and players name
-	teams := page.game.GetTeamsAndTheirResult()
-
-	for _, team := range teams {
-		for i := 1; i < len(team); i++ {
-			layout.AddWidget(widgets.NewQLabel2(team[i], nil, 0))
-		}
-		layout.AddWidget(widgets.NewQLabel2(team[0], nil, 0))
-
-		// find max score
-		teamScore, _ := strconv.Atoi(team[0])
-		if teamScore > maxScore {
-			maxScore = teamScore
-		}
-	}
-	nextActionButton := widgets.NewQPushButton(nil)
-
-	// If score of any team MORE OR EQ than target score - set on button action to end the game
-	// if score LESS - continue the game, go to next session
-	if maxScore >= glob.Config.TargetScore {
-		nextActionButton.SetText(glob.Text.EndGame)
-		nextActionButton.ConnectPressed(page.exit)
-	} else {
-		nextActionButton.SetText(glob.Text.NextRound)
-		nextActionButton.ConnectPressed(page.render)
-	}
-
-	layout.AddWidget(nextActionButton)
-}
-
 //================================================================================================================
 // Render
 
@@ -305,26 +272,64 @@ func (page *gamePageObjects) preparePreRoundLabels() {
 	page.guesserLabel.SetFont(font)
 }
 
-// resultPageRender calls after each session (all team played 1 round)
-// Displays all teams with players names and their score
-func (page *gamePageObjects) resultPageRender() {
-	// Label, which display required result to end the match
-	targetLabel := widgets.NewQLabel2("Target is "+strconv.Itoa(glob.Config.TargetScore), nil, 0)
+func (page *gamePageObjects) createLabelsWithTeamsAndTheirResults() (*widgets.QGridLayout, bool) {
+	var maxScore int
 
 	layout := widgets.NewQGridLayout2()
 
-	layout.AddWidget(page.forceQuitButton)
+	// set all columns not nullable
+	for i := 0; i < 5; i++ {
+		layout.SetColumnStretch(i, 1)
+	}
 
-	layout.AddWidget(targetLabel)
+	// for each team display their team and players name
+	teams := page.game.GetTeamsAndTheirResult()
 
-	page.createLabelsWithTeamsAndTheirResults(layout)
+	var howManyRowsForOneTeam int
+	if len(teams[0]) == 2 {
+		howManyRowsForOneTeam = 2
+	} else {
+		howManyRowsForOneTeam = 3
+	}
 
-	page.application.show(layout)
+	for i, team := range teams {
+		// if row not 0, set line before word
+		if i != 0 {
+			line := widgets.NewQFrame(nil, 0)
+			line.SetFrameShape(widgets.QFrame__HLine)
+			layout.AddWidget3(line, howManyRowsForOneTeam*i-1, 1, 1, 3, 0)
+
+		}
+		// render teams with their score
+		font := gui.NewQFont()
+		font.SetPointSize(48)
+		teamOrPlayerName := widgets.NewQLabel2(team[1], nil, 0)
+		teamOrPlayerName.SetFont(font)
+
+		scoreLabel := widgets.NewQLabel2(team[0], nil, 0)
+		scoreLabel.SetFont(font)
+
+		layout.AddWidget2(teamOrPlayerName, howManyRowsForOneTeam*i, 2, 0)
+		layout.AddWidget2(scoreLabel, howManyRowsForOneTeam*i, 3, 0)
+
+		for j := 2; j < len(team); j++ {
+			playerLabel := widgets.NewQLabel2(team[j], nil, 0)
+			layout.AddWidget2(playerLabel, howManyRowsForOneTeam*i+1, j-1, 0)
+		}
+
+		// find max score
+		teamScore, _ := strconv.Atoi(team[0])
+		if teamScore > maxScore {
+			maxScore = teamScore
+		}
+	}
+
+	return layout, maxScore >= glob.Config.TargetScore
 }
 
-// renderListOfWords display words on post round page
+// renderResLabelAndListOfWords return label with score and layout with words
 // Status of word (guessed/skipped) can be changed by using check box
-func (page *gamePageObjects) renderListOfWords(layout *widgets.QGridLayout) {
+func (page *gamePageObjects) renderResLabelAndListOfWords() (*widgets.QLabel, *widgets.QGridLayout) {
 	layoutWithWords := widgets.NewQGridLayout2()
 
 	// integer result score
@@ -335,8 +340,6 @@ func (page *gamePageObjects) renderListOfWords(layout *widgets.QGridLayout) {
 	font := gui.NewQFont()
 	font.SetPointSize(48)
 	resLabel.SetFont(font)
-
-	layout.AddWidget2(resLabel, 1, 2, core.Qt__AlignCenter)
 
 	// set column 0,2,4 not to be nullable (on column 1 will be a word, on 3 - checkbox)
 	layoutWithWords.SetColumnStretch(0, 1)
@@ -364,21 +367,50 @@ func (page *gamePageObjects) renderListOfWords(layout *widgets.QGridLayout) {
 			}
 			resLabel.SetText(strconv.Itoa(resScore))
 		})
-		// add word with its checkbox on a layout
 		// if row not 0, set line before word
 		if i != 0 {
 			line := widgets.NewQFrame(nil, 0)
 			line.SetFrameShape(widgets.QFrame__HLine)
 			layoutWithWords.AddWidget3(line, 2*i-1, 1, 1, 3, 0)
-
-			layoutWithWords.AddWidget2(wordLabel, 2*i, 1, 0)
-			layoutWithWords.AddWidget2(isWordGuessed, 2*i, 3, 0)
-		} else {
-			layoutWithWords.AddWidget2(wordLabel, 0, 1, 0)
-			layoutWithWords.AddWidget2(isWordGuessed, 0, 3, 0)
 		}
+		// add word with its checkbox on a layout
+		layoutWithWords.AddWidget2(wordLabel, 2*i, 1, 0)
+		layoutWithWords.AddWidget2(isWordGuessed, 2*i, 3, 0)
 	}
-	layout.AddLayout2(layoutWithWords, 2, 0, 1, 5, 0)
+	return resLabel, layoutWithWords
+}
+
+// resultPageRender calls after each session (all team played 1 round)
+// Displays all teams with players names and their score
+func (page *gamePageObjects) resultPageRender() {
+	// Label, which display required result to end the match
+	targetLabel := widgets.NewQLabel2("Target is "+strconv.Itoa(glob.Config.TargetScore), nil, 0)
+
+	layout := widgets.NewQGridLayout2()
+
+	layout.AddWidget2(page.forceQuitButton, 0, 0, core.Qt__AlignLeft)
+
+	layout.AddWidget2(targetLabel, 1, 2, core.Qt__AlignCenter)
+
+	layoutWithPoints, flag := page.createLabelsWithTeamsAndTheirResults()
+
+	nextActionButton := widgets.NewQPushButton(nil)
+	nextActionButton.SetFixedSize(core.NewQSize2(200, 50))
+	// If score of any team MORE OR EQ than target score (flag == true) - set on button action to end the game
+	// if score LESS - continue the game, go to next session
+	if flag {
+		nextActionButton.SetText(glob.Text.EndGame)
+		nextActionButton.ConnectPressed(page.exit)
+	} else {
+		nextActionButton.SetText(glob.Text.NextRound)
+		nextActionButton.ConnectPressed(page.render)
+	}
+
+	layout.AddLayout2(layoutWithPoints, 2, 0, 1, 5, 0)
+
+	layout.AddWidget2(nextActionButton, 3, 2, core.Qt__AlignCenter)
+
+	page.application.show(layout)
 }
 
 // Render post round page. Display score and words. Can rechoose, which had been guessed, and which not
@@ -387,7 +419,11 @@ func (page *gamePageObjects) postRoundPageRender() {
 
 	layout.AddWidget2(page.forceQuitButton, 0, 0, core.Qt__AlignLeft)
 
-	page.renderListOfWords(layout)
+	resLabel, layoutWithWords := page.renderResLabelAndListOfWords()
+
+	layout.AddWidget2(resLabel, 1, 2, core.Qt__AlignCenter)
+
+	layout.AddLayout2(layoutWithWords, 2, 0, 1, 5, 0)
 
 	layout.AddWidget2(page.goToNextRoundButton, 3, 2, core.Qt__AlignCenter)
 
